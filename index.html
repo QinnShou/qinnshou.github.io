@@ -1,23 +1,143 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
+<html lang="zh-CN"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QinnShou · 部署测试</title>
+  <meta name="theme-color" content="#f5f3ef">
+  <title>互动 3D 户型图 · QinnShou</title>
   <style>
-    body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f4f7fb; color: #172033; font: 16px/1.7 system-ui, sans-serif; }
-    main { max-width: 34rem; margin: 1rem; padding: 2.5rem; border-radius: 1rem; background: white; box-shadow: 0 12px 40px #17203318; }
-    h1 { margin: 0 0 .5rem; font-size: clamp(2rem, 6vw, 3rem); }
-    p { margin: .5rem 0; }
-    small { color: #667085; }
+    :root{font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;color:#292d2b;background:#f5f3ef}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #c98254;outline-offset:3px}
+    .app{height:100vh;min-height:600px;display:grid;grid-template-columns:minmax(0,1fr) 318px;grid-template-rows:auto minmax(0,1fr);max-width:1800px;margin:auto}
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:25px 32px 17px;border-bottom:1px solid #e6e2dc;background:#faf9f6;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;letter-spacing:.13em;font-weight:800;font-size:13px}.brand-mark{display:grid;place-items:center;width:32px;height:32px;border:1.5px solid #343a36;border-radius:9px;font-size:17px;letter-spacing:0}
+    .header-note{font-size:12px;color:#868a84}.header-note strong{color:#486657;font-weight:700}.stage{min-height:0;position:relative;overflow:hidden;background:radial-gradient(circle at 47% 44%,#fbfaf7 0,#eeeae4 80%)}
+    .stage:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#bbb8af 1px,transparent 1px);background-size:22px 22px;opacity:.22;pointer-events:none}
+    #scene{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#scene:active{cursor:grabbing}.stage-head{position:absolute;top:28px;left:32px;pointer-events:none;max-width:450px}
+    .eyebrow{font-size:11px;letter-spacing:.22em;font-weight:800;color:#b4764d;text-transform:uppercase}.stage-head h1{font-weight:650;font-size:clamp(25px,3.1vw,43px);letter-spacing:-.055em;margin:11px 0 8px;line-height:1.15}.stage-head p{margin:0;color:#797d77;font-size:13px;line-height:1.8}
+    .stage-head{transition:opacity .2s}.stage.focused .stage-head{opacity:0}.mode{position:absolute;top:27px;right:27px;display:flex;gap:7px;background:#ffffffcf;padding:5px;border:1px solid #e4e1da;border-radius:12px;box-shadow:0 10px 26px #37352d0c}.mode button{border:0;background:transparent;color:#737974;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700}.mode button.active{background:#2e4037;color:white}
+    .controls{position:absolute;right:27px;bottom:29px;display:flex;flex-direction:column;gap:8px}.controls button{width:42px;height:42px;border:1px solid #e1ded7;border-radius:11px;background:#fff;color:#34413a;font-size:20px;box-shadow:0 8px 19px #403a2d13}.controls button:hover,.room:hover{border-color:#bba88e;background:#fffaf3}
+    .hint{position:absolute;left:30px;bottom:26px;color:#6d756e;font-size:11px;line-height:1.6;background:#ffffffd9;border:1px solid #e8e4dc;padding:9px 13px;border-radius:11px;box-shadow:0 8px 24px #403a2d0d}.hint b{color:#414b43}
+    aside{overflow-y:auto;background:#faf9f6;border-left:1px solid #e6e2dc;padding:29px 24px 22px;display:flex;flex-direction:column;gap:25px}.side-overline{font-size:10px;font-weight:800;letter-spacing:.22em;color:#a97453}.side-title{font-size:19px;font-weight:700;letter-spacing:-.03em;margin:8px 0 4px}.side-sub{color:#8a8e88;font-size:12px;margin:0}.rooms{display:grid;gap:8px}.room{width:100%;display:flex;align-items:center;text-align:left;gap:11px;border:1px solid #e9e5de;border-radius:12px;background:white;padding:12px 10px;transition:.2s}.room.active{border-color:#b8aa90;background:#f4efe5;box-shadow:inset 3px 0 #b8865c}.room .icon{display:grid;place-items:center;width:37px;height:37px;border-radius:9px;background:#f2ede5;font-size:17px}.room strong{display:block;font-size:12px}.room small{display:block;font-size:10px;color:#92958f;margin-top:3px}.room .arrow{margin-left:auto;color:#b0afa9;font-size:17px}.section-label{font-size:10px;font-weight:800;letter-spacing:.18em;color:#a97453;margin:0 0 9px}.switch-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #ece8e2;font-size:12px;color:#555d57}.toggle{width:37px;height:22px;border-radius:20px;border:0;background:#bbbfb9;position:relative;transition:.2s}.toggle:after{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;border-radius:50%;background:white;transition:.2s}.toggle.on{background:#527665}.toggle.on:after{transform:translateX(15px)}
+    .selected{border:1px solid #e8e3d9;border-radius:14px;background:#f3f0ea;padding:14px;margin-top:auto}.selected span{font-size:10px;color:#a17454;letter-spacing:.13em;font-weight:800}.selected h2{font-size:16px;margin:7px 0 5px}.selected p{font-size:11px;color:#777d75;line-height:1.7;margin:0}.disclaimer{font-size:10px;color:#9b9d97;line-height:1.6;margin:0}
+    @media(max-width:980px){.app{height:auto;grid-template-columns:1fr;grid-template-rows:auto minmax(570px,68vh) auto}aside{overflow:visible;border-left:0;border-top:1px solid #e6e2dc;display:grid;grid-template-columns:1fr 1fr;gap:22px}.room-list{grid-row:span 2}.selected{margin:0}.stage{min-height:570px}.stage-head{top:22px;left:22px}.mode{top:22px;right:22px}.hint{left:18px;bottom:20px}}
+    @media(max-width:650px){header{padding:16px}.header-note{display:none}.app{grid-template-rows:auto 65vh auto}.stage{min-height:440px}.stage-head{top:17px;left:17px;max-width:55%}.stage-head h1{font-size:25px}.stage-head p{font-size:11px}.mode{top:17px;right:12px;flex-direction:column}.mode button{padding:7px 9px}.hint{max-width:64%;font-size:10px;bottom:14px;left:13px}.controls{right:13px;bottom:14px}.controls button{width:36px;height:36px}aside{grid-template-columns:1fr;padding:23px 16px}.room-list{grid-row:auto}.rooms{grid-template-columns:1fr 1fr}.room{padding:8px}.room .icon{width:30px;height:30px}.room small,.room .arrow{display:none}}
   </style>
 </head>
 <body>
-  <main>
-    <h1>测试页面已上线 ✅</h1>
-    <p>这是 <strong>qinnshou.github.io</strong> 的 GitHub Pages 测试页面。</p>
-    <p>如果你能看到这段文字，说明公开网站已可以访问。</p>
-    <small>创建于 2026 年 10 月 1 日</small>
+<div class="app">
+  <header><div class="brand"><span class="brand-mark">⌂</span> QINNSHOU <span style="color:#b5b9b1;font-weight:400">/</span> 3D FLOOR PLAN</div><div class="header-note"><strong>●</strong> 可交互空间预览 &nbsp;·&nbsp; 截图估算复原</div></header>
+  <main class="stage" aria-label="可旋转缩放的 3D 户型图">
+    <canvas id="scene" aria-label="3D 户型图；使用鼠标拖动旋转，滚轮缩放，触屏可拖动和双指缩放" width="1203" height="807"></canvas>
+    <div class="stage-head"><div class="eyebrow">SPACE EXPLORER / 01</div><h1>一张图，走进家。</h1><p>拖动旋转，滚轮缩放；点选右侧房间，查看空间布局。</p></div>
+    <div class="mode" role="group" aria-label="视角模式"><button id="mode3d" class="active" type="button">立体视角</button><button id="modeTop" type="button">俯视平面</button></div>
+    <div class="hint"><b>操作提示</b>　拖动旋转 · 滚轮 / 双指缩放<br>点选房间，镜头会移至对应位置</div>
+    <div class="controls"><button id="zoomIn" type="button" aria-label="放大">+</button><button id="zoomOut" type="button" aria-label="缩小">−</button><button id="reset" type="button" aria-label="重置视角">⌂</button></div>
   </main>
-</body>
-</html>
+  <aside>
+    <section class="room-list"><div class="side-overline">EXPLORE THE PLAN</div><h2 class="side-title">空间导航</h2><p class="side-sub">选择房间，快速切换观察重点</p><div class="rooms" id="rooms" style="margin-top:19px"></div></section>
+    <section><p class="section-label">显示选项</p><div class="switch-row">完整墙高 <button id="wallToggle" class="toggle" type="button" role="switch" aria-checked="false" aria-label="完整墙高"></button></div><div class="switch-row">家具陈设 <button id="furnToggle" class="toggle on" type="button" role="switch" aria-checked="true" aria-label="家具陈设"></button></div><div class="switch-row">房间标签 <button id="labelToggle" class="toggle on" type="button" role="switch" aria-checked="true" aria-label="房间标签"></button></div></section>
+    <section class="selected"><span>SELECTED SPACE</span><h2 id="selectedName">全屋概览</h2><p id="selectedText">从客餐厅到三间独立空间，沿原图布局探索整个家。</p></section>
+    <p class="disclaimer">依据上传平面图按比例估算。墙位、家具及非清晰标注的尺寸仅作视觉演示，不作为施工或面积测量依据。</p>
+  </aside>
+</div>
+<script>
+(()=>{'use strict';
+const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d',{alpha:false});
+const rooms=[
+  {id:'all',name:'全屋概览',icon:'⌂',sub:'完整户型',x:7.3,y:5.35,zoom:1,description:'从客餐厅到三间独立空间，沿原图布局探索整个家。'},
+  {id:'living',name:'客厅',icon:'◫',sub:'沙发 · 茶几 · 电视',x:7.65,y:7.35,zoom:1.65,description:'开放式客厅位于户型中央，连接餐厅、书房与卧室。'},
+  {id:'dining',name:'餐厨区',icon:'◉',sub:'六人餐桌 · L 型厨房',x:6.6,y:2.45,zoom:1.55,description:'餐桌紧邻厨房；水槽、灶台、冰箱和洗衣区按图示位置还原。'},
+  {id:'study',name:'书房',icon:'▤',sub:'书桌 · 沙发',x:2.65,y:7.7,zoom:1.85,description:'图左侧的独立书房，设有书桌、沙发和收纳柜。'},
+  {id:'secondary',name:'次卧',icon:'▧',sub:'1.5 米宽床',x:12.15,y:2.15,zoom:1.85,description:'右上角次卧，床宽按照图上可辨识的 1.5 米标注。'},
+  {id:'bath',name:'卫生间',icon:'◍',sub:'浴缸 · 洗手台',x:12.1,y:5,zoom:1.8,description:'次卧与主卧之间的卫生间，包含浴缸、坐便器和洗手台。'},
+  {id:'master',name:'主卧',icon:'▥',sub:'1.8 米宽床',x:12.15,y:8.15,zoom:1.75,description:'右下角主卧，床宽按照图上可辨识的 1.8 米标注。'}
+];
+document.querySelector('#rooms').innerHTML=rooms.map((r,i)=>`<button type="button" class="room${i===0?' active':''}" data-room="${r.id}"><span class="icon">${r.icon}</span><span><strong>${r.name}</strong><small>${r.sub}</small></span><span class="arrow">›</span></button>`).join('');
+const cam={yaw:-.55,pitch:.94,zoom:1,x:7.3,y:5.35},target={...cam};let width=0,height=0,dpr=1,fullWalls=false,furniture=true,labels=true,active='all',topMode=false,drag=null,pinchDist=0;
+const faces=[],labelPoints=[];
+const C={floor:'#f0e8dc',living:'#efe6d8',kitchen:'#e6e9df',study:'#e8e4dc',bed:'#e9e6dc',bath:'#dbe7e5',wall:'#f9f8f4',wallTop:'#ffffff',glass:'#9fcbd1',wood:'#a97957',woodLight:'#d9b896',sofa:'#798f83',chair:'#bb9c7e',table:'#ab8060',rug:'#dbc9b2',linen:'#f8f3e9',pillow:'#d9e1d8',counter:'#e4ded1',dark:'#5b675c',fixture:'#f8fcfb',accent:'#bf8060'};
+function face(v,c,type='solid',alpha=1){faces.push({v,c,type,alpha});}
+function poly2(pts,c,z=0){face(pts.map(p=>[p[0],p[1],z]),c,'floor');}
+function box(x,y,w,d,h,c,z=0,type='furn'){
+  const a=[x,y,z],b=[x+w,y,z],cc=[x+w,y+d,z],e=[x,y+d,z],A=[x,y,z+h],B=[x+w,y,z+h],D=[x+w,y+d,z+h],E=[x,y+d,z+h];
+  face([A,B,D,E],c,type);face([a,b,B,A],c,type);face([b,cc,D,B],c,type);face([cc,e,E,D],c,type);face([e,a,A,E],c,type);
+}
+function disc(x,y,r,c,z=.04,n=20){let v=[];for(let i=0;i<n;i++){let a=i*2*Math.PI/n;v.push([x+r*Math.cos(a),y+r*Math.sin(a),z])}face(v,c,'floor')}
+function cylinder(x,y,r,h,c,z=0,n=18,type='furn'){
+  let top=[],bot=[];for(let i=0;i<n;i++){const a=i*2*Math.PI/n;top.push([x+r*Math.cos(a),y+r*Math.sin(a),z+h]);bot.push([x+r*Math.cos(a),y+r*Math.sin(a),z])}face(top,c,type);for(let i=0;i<n;i++)face([bot[i],bot[(i+1)%n],top[(i+1)%n],top[i]],c,type);
+}
+// The metre coordinates follow the supplied plan's earlier vector reconstruction.
+poly2([[4,.0],[13.8,.0],[13.8,10.6],[4.15,10.6],[4.15,9.75],[.9,9.75],[.9,5.7],[2.9,5.7],[2.9,4.1],[4,4.1]],C.floor,-.075);
+poly2([[4.24,.24],[8.82,.24],[8.82,4.1],[4.24,4.1]],C.kitchen,-.052);
+poly2([[4.16,4.15],[10.47,4.15],[10.47,10.35],[4.16,10.35]],C.living,-.05);
+poly2([[1.12,5.95],[3.94,5.95],[3.94,9.49],[1.12,9.49]],C.study,-.048);
+poly2([[10.72,.24],[13.54,.24],[13.54,3.96],[10.72,3.96]],C.bed,-.047);
+poly2([[10.72,4.24],[13.54,4.24],[13.54,5.72],[10.72,5.72]],C.bath,-.045);
+poly2([[10.72,6],[13.54,6],[13.54,10.33],[10.72,10.33]],C.bed,-.046);
+// Pale rugs make the open rooms easier to read when viewed from above.
+disc(7.52,7.42,1.34,C.rug,-.028,28);disc(7.15,2.65,1.27,'#f0e5d4',-.028,24);
+const walls=[
+ [4,0,1.05,.24],[6.45,0,.65,1.1],[9.1,0,.9,.24],[10.7,0,.5,.24],[13.3,0,.5,.24],
+ [4,.24,.24,.9],[4.24,.9,.46,.3],[4.38,2.4,.32,1.9],[2.9,4.1,1.48,.24],[2.9,4.34,.24,1.46],
+ [.9,5.7,1.45,.24],[3.8,5.7,.3,.24],[.9,5.94,.24,3.8],[1.14,9.5,.55,.24],[3.95,6.9,.24,2.6],[3.95,9.74,.24,.86],
+ [4.19,10.36,6.51,.24],[13.56,10.1,.24,.5],[13.56,.24,.24,.74],[13.2,3.81,.6,.49],[13.56,4.3,.24,1.45],[13.1,5.75,.7,.3],[13.56,9.12,.24,.98],
+ [10.48,.24,.24,2.82],[10.72,3.98,.95,.24],[11.67,3.98,1.53,.24],[8.82,.24,.24,4],[9.06,2.91,.52,.18],[9.06,4.06,.48,.18],
+ [10.48,4.22,.24,.63],[10.72,5.75,2.38,.24],[10.48,5.99,.24,2.94],[10.48,9.9,.24,.46],[12.47,4.22,.16,1.53]
+];
+const windows=[[5.05,.12,6.45,.12],[7.1,.12,9.1,.12],[10,.12,10.7,.12],[11.2,.12,13.3,.12],[4.5,1.2,4.5,2.4],[2.35,5.82,3.8,5.82],[1.69,9.62,3.95,9.62],[10.7,10.48,13.56,10.48],[13.68,.98,13.68,3.81],[13.68,6.05,13.68,9.12]];
+function makeArchitecture(){for(const [x,y,w,d] of walls)box(x,y,w,d,fullWalls?2.45:1.18,C.wall,0,'wall');for(const [x,y,X,Y] of windows){const vertical=Math.abs(x-X)<.01;const t=.065;if(vertical)box(x-t/2,Math.min(y,Y),t,Math.abs(Y-y),fullWalls?1.15:.69,C.glass,.28,'glass');else box(Math.min(x,X),y-t/2,Math.abs(X-x),t,fullWalls?1.15:.69,C.glass,.28,'glass')}}
+function bed(x,y,d){box(x,y,2.1,d,.34,C.woodLight,.08);box(x+.1,y+.09,1.74,d-.18,.18,C.linen,.44);box(x+1.55,y+.12,.34,d-.24,.12,C.pillow,.64);box(x+2.04,y,.09,d,.78,C.wood,.07,'furn')}
+function chair(x,y,angle=0){box(x,y,.4,.4,.37,C.chair,.02);if(angle===0)box(x,y,.4,.075,.39,C.chair,.39);else box(x,y,.075,.4,.39,C.chair,.39)}
+function makeFurniture(){
+  // Kitchen and dining.
+  box(4.74,.35,1.63,.69,.84,C.counter);box(4.74,1.1,.64,2.88,.86,C.counter);box(4.8,.42,.7,.49,.035,C.fixture,.87);disc(5.05,2.04,.13,C.dark,.9);disc(5.05,2.39,.13,C.dark,.9);
+  box(7.1,.28,.94,.78,1.53,C.fixture);box(8.1,.28,.67,.78,.9,C.fixture);disc(7.15,2.67,.66,C.table,.73);cylinder(7.15,2.67,.1,.73,C.wood);
+  for(let i=0;i<6;i++){let a=(i*Math.PI/3)-Math.PI/2;chair(7.15+.91*Math.cos(a)-.2,2.67+.91*Math.sin(a)-.2,i%2)}
+  // Open living area.
+  box(6.08,6.73,.86,1.88,.43,C.sofa,.02);box(6.08,6.73,.24,1.88,.45,C.sofa,.47);box(6.84,5.91,.87,.78,.42,C.chair);box(6.84,8.72,.87,.78,.42,C.chair);
+  box(7.27,7.05,.59,1.07,.34,C.woodLight,.03);box(10.17,6.5,.2,2.62,.63,C.dark,.22);
+  box(6.08,5.92,.6,.6,.43,C.woodLight);box(6.08,8.76,.6,.6,.43,C.woodLight);
+  // Study.
+  box(1.2,6.01,1.89,.57,.96,C.woodLight);box(1.2,7.83,.62,1.58,.73,C.woodLight);box(2.92,7.84,.65,1.73,.42,C.sofa);box(3.65,7.04,.27,1.58,1.75,C.woodLight);
+  // Bedrooms.
+  bed(11.12,1.32,1.5);box(11.52,3.42,1.81,.52,1.95,C.woodLight);bed(11.1,7.57,1.8);box(11.1,6.1,2.25,.55,1.97,C.woodLight);box(12.94,9.56,.42,.55,.72,C.woodLight);
+  // Bath: sink, toilet and bath.
+  box(10.77,4.29,.8,.46,.73,C.fixture);disc(11.18,4.52,.16,C.glass,.76);cylinder(12.02,4.82,.22,.43,C.fixture);box(12.64,4.33,.81,1.29,.52,C.fixture);box(12.7,4.39,.69,1.17,.03,C.glass,.53);
+}
+function rebuild(){faces.length=0;makeArchitecture();if(furniture)makeFurniture()}
+function vecDot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+function cameraBasis(){let cy=Math.cos(cam.yaw),sy=Math.sin(cam.y),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);let eye=[cam.x+sy*cp*25,cam.y+cy*cp*25,sp*25],forward=[-sy*cp,-cy*cp,-sp],right=[cy,-sy,0],up=[-sy*sp,-cy*sp,cp];return{eye,forward,right,up}}
+function project(p,b,s){let q=[p[0]-cam.x,p[1]-cam.y,p[2]-.15];return [width*.5+vecDot(q,b.right)*s,height*.53-vecDot(q,b.up)*s]}
+function shade(hex,f){let n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;return`rgb(${Math.max(0,Math.min(255,r*f))|0},${Math.max(0,Math.min(255,g*f))|0},${Math.max(0,Math.min(255,b*f))|0})`}
+function draw(){
+  if(!width||!height)return;cam.yaw+=(target.yaw-cam.yaw)*.16;cam.pitch+=(target.pitch-cam.pitch)*.16;cam.zoom+=(target.zoom-cam.zoom)*.16;cam.x+=(target.x-cam.x)*.16;cam.y+=(target.y-cam.y)*.16;
+  ctx.fillStyle='#f3f0ea';ctx.fillRect(0,0,width,height);const b=cameraBasis(),s=Math.min(width/17.5,height/17.7)*cam.zoom;
+  const list=faces.map(f=>{let center=[0,0,0];for(let p of f.v){center[0]+=p[0];center[1]+=p[1];center[2]+=p[2]}center=center.map(v=>v/f.v.length);return {...f,depth:vecDot([center[0]-b.eye[0],center[1]-b.eye[1],center[2]-b.eye[2]],b.forward),center}}).sort((a,z)=>z.depth-a.depth);
+  for(let f of list){let a=f.v[0],v=f.v[1],c=f.v[2],e1=[v[0]-a[0],v[1]-a[1],v[2]-a[2]],e2=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],normal=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];
+    // All faces are drawn in depth order; the upper surface stays brightest.
+    const bright=Math.abs(normal[2])>.001?1:normal[0]+normal[1]>0?.82:.91;
+    ctx.beginPath();f.v.forEach((p,i)=>{let q=project(p,b,s);i?ctx.lineTo(...q):ctx.moveTo(...q)});ctx.closePath();ctx.fillStyle=shade(f.c,bright);ctx.fill();ctx.strokeStyle=f.type==='wall'?'#c8c8c1':f.type==='glass'?'#7fb6bd':'#ffffff66';ctx.lineWidth=f.type==='wall'?1:.6;ctx.stroke();
+  }
+  if(labels){ctx.textAlign='center';ctx.textBaseline='middle';for(let r of rooms.slice(1)){let [x,y]=project([r.x,r.y,.08],b,s);if(x<25||y<25||x>width-25||y>height-25)continue;ctx.font='600 11px Inter, Microsoft YaHei, sans-serif';let w=Math.max(48,ctx.measureText(r.name).width+20);ctx.fillStyle=active===r.id?'#314b3bdc':'#ffffffd9';ctx.beginPath();ctx.roundRect(x-w/2,y-12,w,24,12);ctx.fill();ctx.fillStyle=active===r.id?'#fff':'#4c5c51';ctx.fillText(r.name,x,y+.5)}}
+  requestAnimationFrame(draw)
+}
+function size(){let r=canvas.getBoundingClientRect();width=r.width;height=r.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+function select(id){let r=rooms.find(x=>x.id===id);if(!r)return;active=id;document.querySelector('.stage').classList.toggle('focused',id!=='all');target.x=r.x;target.y=r.y;target.zoom=r.zoom;document.querySelectorAll('.room').forEach(el=>el.classList.toggle('active',el.dataset.room===id));document.querySelector('#selectedName').textContent=r.name;document.querySelector('#selectedText').textContent=r.description}
+document.querySelector('#rooms').addEventListener('click',e=>{let button=e.target.closest('[data-room]');if(button)select(button.dataset.room)});
+function setMode(top){topMode=top;target.pitch=top?Math.PI/2-.005:.94;target.yaw=top?0:-.55;document.querySelector('#mode3d').classList.toggle('active',!top);document.querySelector('#modeTop').classList.toggle('active',top)}
+document.querySelector('#mode3d').onclick=()=>setMode(false);document.querySelector('#modeTop').onclick=()=>setMode(true);
+document.querySelector('#zoomIn').onclick=()=>target.zoom=Math.min(3.4,target.zoom*1.2);document.querySelector('#zoomOut').onclick=()=>target.zoom=Math.max(.62,target.zoom/1.2);document.querySelector('#reset').onclick=()=>{setMode(false);select('all')};
+function toggle(el,cb){el.addEventListener('click',()=>{let on=!el.classList.contains('on');el.classList.toggle('on',on);el.setAttribute('aria-checked',String(on));cb(on)})}
+toggle(document.querySelector('#wallToggle'),v=>{fullWalls=v;rebuild()});toggle(document.querySelector('#furnToggle'),v=>{furniture=v;rebuild()});toggle(document.querySelector('#labelToggle'),v=>labels=v);
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,yaw:target.yaw,pitch:target.pitch,id:e.pointerId}});
+canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;target.yaw=drag.yaw+(e.clientX-drag.x)*.006;target.pitch=Math.max(.24,Math.min(1.565,drag.pitch+(e.clientY-drag.y)*.005));if(topMode&&Math.abs(e.clientY-drag.y)>8){topMode=false;document.querySelector('#modeTop').classList.remove('active');document.querySelector('#mode3d').classList.add('active')}});
+canvas.addEventListener('pointerup',e=>{if(drag?.id===e.pointerId)drag=null});canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{e.preventDefault();target.zoom=Math.max(.62,Math.min(3.4,target.zoom*Math.exp(-e.deltaY*.001)))},{passive:false});
+let touches={};canvas.addEventListener('touchstart',e=>{for(let t of e.changedTouches)touches[t.identifier]=[t.clientX,t.clientY];if(e.touches.length===2)pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});
+canvas.addEventListener('touchmove',e=>{if(e.touches.length===2){e.preventDefault();let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinchDist)target.zoom=Math.max(.62,Math.min(3.4,target.zoom*d/pinchDist));pinchDist=d;drag=null}},{passive:false});canvas.addEventListener('touchend',e=>{for(let t of e.changedTouches)delete touches[t.identifier];if(e.touches.length<2)pinchDist=0});
+window.addEventListener('resize',size);rebuild();size();requestAnimationFrame(draw);
+})();
+</script>
+
+
+</body></html>
